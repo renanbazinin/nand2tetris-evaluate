@@ -54,7 +54,6 @@ app.post("/gradeChip", async (req: Request<unknown, unknown, GradeChipBody>, res
       const msg = "Missing config.projectID or config.chip";
       const fallback: EvaluationResult = {
         executionCode: 0,
-        "execution code": 0,
         log: msg,
         grade: 0,
         outExecution: { headers: [], rows: [] },
@@ -71,7 +70,6 @@ app.post("/gradeChip", async (req: Request<unknown, unknown, GradeChipBody>, res
       const msg = "Provide either `files` (map of filename->content) or `hdl` string";
       const fallback: EvaluationResult = {
         executionCode: 0,
-        "execution code": 0,
         log: msg,
         grade: 0,
         outExecution: { headers: [], rows: [] },
@@ -85,7 +83,6 @@ app.post("/gradeChip", async (req: Request<unknown, unknown, GradeChipBody>, res
     const message = err instanceof Error ? err.message : "Unknown error";
     const fallback: EvaluationResult = {
       executionCode: 0,
-      "execution code": 0,
       log: message,
       grade: 0,
       outExecution: { headers: [], rows: [] },

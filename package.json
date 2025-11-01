@@ -1,6 +1,6 @@
 {
   "name": "api-lite",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "private": true,
   "description": "Lightweight API to compile and grade HDL chips against builtin tests.",
   "type": "module",

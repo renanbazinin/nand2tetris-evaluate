@@ -14,9 +14,6 @@ export interface EvaluationConfig {
 
 export interface EvaluationResult {
   executionCode: 0 | 1;
-  // Maintain a field name similar to the request for compatibility
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  "execution code"?: 0 | 1;
   log: string;
   grade: 0 | 100;
   outExecution: {
@@ -137,7 +134,6 @@ export async function evaluateHDL(
 
   return {
     executionCode,
-    "execution code": executionCode,
     log,
     grade,
     outExecution,

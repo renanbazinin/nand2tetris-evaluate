@@ -200,9 +200,9 @@
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ config: { projectID, chip }, hdl })
         });
-        const data = await res.json();
-        $('#exec').textContent = data.executionCode ?? data['execution code'] ?? 0;
-        $('#exec').className = (data.executionCode === 1 || data['execution code'] === 1) ? 'ok' : 'bad';
+  const data = await res.json();
+  $('#exec').textContent = data.executionCode ?? 0;
+  $('#exec').className = (data.executionCode === 1) ? 'ok' : 'bad';
         $('#gradeVal').textContent = data.grade ?? 0;
         $('#gradeVal').className = (data.grade === 100) ? 'ok' : 'bad';
         $('#logs').textContent = data.log || '';
