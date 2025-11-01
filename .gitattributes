@@ -1,0 +1,11 @@
+# Favor TypeScript in GitHub Linguist language stats
+src/** linguist-language=TypeScript
+*.ts linguist-language=TypeScript
+*.tsx linguist-language=TypeScript
+
+# De-emphasize static client assets from language breakdown
+client/** linguist-documentation
+
+# Ignore generated output and vendor in stats
+dist/** linguist-generated
+vendor/** linguist-vendored

@@ -101,3 +101,7 @@ dist/
 
 # tsconfig build info
 tsconfig.tsbuildinfo
+
+# Postman collections & folder
+postman/
+*.postman_*.json
