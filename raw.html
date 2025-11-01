@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nand2Tetris HDL Grader • Raw</title>
+  <meta name="description" content="Paste your .hdl, choose chip/project, and grade with built‑in Nand2Tetris tests. See logs and out tables." />
+  <link rel="icon" type="image/png" href="https://i.imgur.com/jpmnJ1W.png" />
+  <link rel="shortcut icon" type="image/png" href="https://i.imgur.com/jpmnJ1W.png" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Nand2Tetris HDL Grader • Raw" />
+  <meta property="og:description" content="Paste .hdl and grade your chips against built‑in tests." />
+  <meta property="og:image" content="https://i.imgur.com/jpmnJ1W.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Nand2Tetris HDL Grader • Raw" />
+  <meta name="twitter:description" content="Paste .hdl and grade your chips against built‑in tests." />
+  <meta name="twitter:image" content="https://i.imgur.com/jpmnJ1W.png" />
+  <script src="config.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; /* slate-900 */
+      --panel: #111827; /* gray-900 */
+      --muted: #94a3b8; /* slate-400 */
+      --fg: #e5e7eb; /* gray-200 */
+      --accent: #22d3ee; /* cyan-400 */
+      --accent-2: #34d399; /* emerald-400 */
+      --danger: #fb7185; /* rose-400 */
+      --border: #1f2937; /* gray-800 */
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: radial-gradient(1200px 800px at 10% 10%, #0b1220, var(--bg));
+      color: var(--fg); font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+      line-height: 1.4;
+    }
+  header { padding: 24px; text-align: center; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
+  header p { margin: 6px 0 8px; color: var(--muted); }
+  .health { display:flex; align-items:center; gap:8px; justify-content:center; font-size:13px; color: var(--muted); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #475569; box-shadow: 0 0 8px rgba(0,0,0,0.3); display:inline-block; }
+  .s-green { background: #22c55e; }
+  .s-yellow { background: #f59e0b; }
+  .s-red { background: #ef4444; }
+
+    .container { max-width: 1080px; margin: 0 auto; padding: 16px 24px 48px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px; backdrop-filter: blur(2px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .card h2 { margin: 0 0 10px; font-size: 16px; color: var(--muted); font-weight: 600; }
+
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    input[type="text"], textarea, select {
+      width: 100%; background: #0b1220; color: var(--fg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none;
+    }
+    textarea { min-height: 260px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+    button {
+      background: linear-gradient(180deg, var(--accent), #0891b2);
+      border: none; color: #001016; font-weight: 700; letter-spacing: .2px;
+      padding: 10px 14px; border-radius: 10px; cursor: pointer; transition: transform .08s ease;
+    }
+    button.secondary { background: linear-gradient(180deg, #475569, #1f2937); color: #e5e7eb; }
+    button:active { transform: translateY(1px); }
+
+    pre, code { background: #0b1220; color: #93c5fd; }
+    pre { padding: 12px; border-radius: 10px; overflow: auto; border: 1px solid var(--border); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid var(--border); padding: 8px; text-align: left; }
+    th { color: var(--muted); font-weight: 600; }
+    .ok { color: var(--accent-2); }
+    .bad { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Nand2Tetris HDL Grader – Raw</h1>
+    <p>Paste your HDL, select a project and chip, then grade it.</p>
+    <div class="health">
+      <span class="dot s-yellow" id="healthDot"></span>
+      <span id="healthText">Checking health…</span>
+      <span id="healthVer"></span>
+    </div>
+  </header>
+  <div class="container">
+    <div class="grid">
+      <section class="card">
+        <h2>Input</h2>
+        <div class="row">
+          <div>
+            <label for="project">Project ID</label>
+            <select id="project">
+              <option value="project_01">project_01 (Basic Gates)</option>
+              <option value="project_02">project_02 (ALU)</option>
+              <option value="project_03">project_03 (Memory)</option>
+              <option value="project_04">project_04 (Mult/Fill)</option>
+              <option value="project_05">project_05 (Computer)</option>
+            </select>
+          </div>
+          <div>
+            <label for="chip">Chip Name</label>
+            <input id="chip" type="text" placeholder="e.g. ALU" />
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <label for="hdl">HDL</label>
+          <textarea id="hdl" placeholder="Paste your .hdl contents here..."></textarea>
+        </div>
+        <div class="actions">
+          <button id="fillSample" class="secondary">Fill ALU sample</button>
+          <button id="grade">Grade</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Result</h2>
+        <div id="status">
+          <div>Execution Code: <span id="exec" class="bad">—</span></div>
+          <div>Grade: <span id="gradeVal" class="bad">—</span></div>
+        </div>
+        <div style="margin-top:12px">
+          <label>Logs</label>
+          <pre id="logs" style="max-height:220px"></pre>
+        </div>
+        <div style="margin-top:12px">
+          <label>Out Table</label>
+          <div style="overflow:auto; max-height:260px">
+            <table id="outTable"></table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const API_BASE = (window.API_CONFIG?.API_BASE)
+      ?? (location.hostname.endsWith('github.io') ? 'https://nand2tetris-latest.onrender.com/'
+          : (location.origin.startsWith('http') ? location.origin : 'http://localhost:3000'));
+
+    function setHealth(status, version) {
+      const dot = $('#healthDot');
+      const text = $('#healthText');
+      const ver = $('#healthVer');
+      dot.classList.remove('s-green','s-yellow','s-red');
+      if (status === 'ok') { dot.classList.add('s-green'); text.textContent = 'Healthy'; }
+      else if (status === 'checking') { dot.classList.add('s-yellow'); text.textContent = 'Checking…'; }
+      else { dot.classList.add('s-red'); text.textContent = 'Unreachable'; }
+      ver.textContent = version ? `• v${version}` : '';
+    }
+
+    async function healthCheck() {
+      setHealth('checking');
+      try {
+        const ac = new AbortController();
+        const t = setTimeout(() => ac.abort(), 5000);
+        const res = await fetch(`${API_BASE}/health`, { signal: ac.signal });
+        clearTimeout(t);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setHealth(data?.ok ? 'ok' : 'red', data?.version);
+      } catch {
+        setHealth('red');
+      }
+    }
+    healthCheck();
+    setInterval(healthCheck, 15000);
+
+    function renderTable(headers, rows) {
+      const tbl = $('#outTable');
+      tbl.innerHTML = '';
+      if (!headers || headers.length === 0) return;
+      const thead = document.createElement('thead');
+      const trh = document.createElement('tr');
+      headers.forEach(h => { const th = document.createElement('th'); th.textContent = h; trh.appendChild(th); });
+      thead.appendChild(trh);
+      const tbody = document.createElement('tbody');
+      (rows || []).forEach(r => { const tr = document.createElement('tr'); r.forEach(c => { const td = document.createElement('td'); td.textContent = String(c); tr.appendChild(td); }); tbody.appendChild(tr); });
+      tbl.appendChild(thead); tbl.appendChild(tbody);
+    }
+
+    async function grade() {
+      const projectID = $('#project').value.trim();
+      const chip = $('#chip').value.trim();
+      const hdl = $('#hdl').value;
+      if (!projectID || !chip || !hdl) { alert('Please fill project, chip and HDL.'); return; }
+      $('#grade').disabled = true;
+      $('#grade').textContent = 'Grading...';
+      try {
+        const res = await fetch(`${API_BASE}/gradeChip`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: { projectID, chip }, hdl })
+        });
+  const data = await res.json();
+  $('#exec').textContent = data.executionCode ?? 0;
+  $('#exec').className = (data.executionCode === 1) ? 'ok' : 'bad';
+        $('#gradeVal').textContent = data.grade ?? 0;
+        $('#gradeVal').className = (data.grade === 100) ? 'ok' : 'bad';
+        $('#logs').textContent = data.log || '';
+        renderTable(data?.outExecution?.headers, data?.outExecution?.rows);
+      } catch (e) {
+        $('#exec').textContent = '0';
+        $('#exec').className = 'bad';
+        $('#gradeVal').textContent = '0';
+        $('#gradeVal').className = 'bad';
+        $('#logs').textContent = String(e);
+        renderTable([], []);
+      } finally {
+        $('#grade').disabled = false;
+        $('#grade').textContent = 'Grade';
+      }
+    }
+
+    $('#grade').addEventListener('click', grade);
+
+    // Quick sample to help test wiring
+    $('#fillSample').addEventListener('click', () => {
+      $('#project').value = 'project_02';
+      $('#chip').value = 'ALU';
+      $('#hdl').value = `/** A deliberately minimal ALU stub to demonstrate requests. Replace with your own. */
+CHIP ALU {
+  IN x[16], y[16], zx, nx, zy, ny, f, no;
+  OUT out[16], zr, ng;
+  PARTS:
+  // TODO: Implement ALU
+}
+`;
+    });
+  </script>
+</body>
+</html>

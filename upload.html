@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nand2Tetris HDL Grader • Upload</title>
+  <meta name="description" content="Upload your .hdl, auto-detect chip, pick project, and grade using built‑in Nand2Tetris tests. Logs and out tables included." />
+  <link rel="icon" type="image/png" href="https://i.imgur.com/jpmnJ1W.png" />
+  <link rel="shortcut icon" type="image/png" href="https://i.imgur.com/jpmnJ1W.png" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Nand2Tetris HDL Grader • Upload" />
+  <meta property="og:description" content="Upload .hdl and grade your chips against built‑in tests." />
+  <meta property="og:image" content="https://i.imgur.com/jpmnJ1W.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Nand2Tetris HDL Grader • Upload" />
+  <meta name="twitter:description" content="Upload .hdl and grade your chips against built‑in tests." />
+  <meta name="twitter:image" content="https://i.imgur.com/jpmnJ1W.png" />
+  <script src="config.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; --panel: #111827; --muted: #94a3b8; --fg: #e5e7eb; --accent: #22d3ee; --border: #1f2937; --ok:#34d399; --bad:#fb7185;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { margin:0; background: radial-gradient(1200px 800px at 10% 10%, #0b1220, var(--bg)); color: var(--fg); font-family: ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial; }
+  header { padding: 24px; text-align:center; }
+  header h1 { margin:0; font-size: 28px; }
+  header p { margin:6px 0 8px; color: var(--muted); }
+  .health { display:flex; align-items:center; gap:8px; justify-content:center; font-size:13px; color: var(--muted); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #475569; box-shadow: 0 0 8px rgba(0,0,0,0.3); display:inline-block; }
+  .s-green { background: #22c55e; }
+  .s-yellow { background: #f59e0b; }
+  .s-red { background: #ef4444; }
+    .container { max-width: 880px; margin: 0 auto; padding: 16px 24px 48px; }
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+    label { display:block; font-size:12px; color: var(--muted); margin-bottom:6px; }
+    input[type="text"], select { width: 100%; background:#0b1220; color: var(--fg); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .actions { display:flex; gap:8px; justify-content:flex-end; margin-top: 12px; }
+    button { background: linear-gradient(180deg, var(--accent), #0891b2); border: none; color: #001016; font-weight:700; padding:10px 14px; border-radius:10px; cursor:pointer; }
+    .hint { color: var(--muted); font-size: 12px; }
+    pre { background:#0b1220; color:#93c5fd; border:1px solid var(--border); border-radius:10px; padding:12px; overflow:auto; }
+    table { width:100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid var(--border); padding: 8px; text-align: left; }
+    th { color: var(--muted); font-weight: 600; }
+    .ok { color: var(--ok); }
+    .bad { color: var(--bad); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Nand2Tetris HDL Grader – Upload</h1>
+    <p>Select an .hdl file, we'll derive the chip name from the filename and guess the project.</p>
+    <div class="health">
+      <span class="dot s-yellow" id="healthDot"></span>
+      <span id="healthText">Checking health…</span>
+      <span id="healthVer"></span>
+    </div>
+  </header>
+
+  <div class="container">
+    <section class="card">
+      <div class="row">
+        <div>
+          <label for="file">HDL File</label>
+          <input type="file" id="file" accept=".hdl,.HDL" />
+          <div class="hint">Tip: Filename like <code>ALU.hdl</code> → chip "ALU"</div>
+        </div>
+        <div>
+          <label for="chip">Chip</label>
+          <input id="chip" type="text" placeholder="Auto-filled from filename" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div>
+          <label for="project">Project ID</label>
+          <select id="project"></select>
+          <div class="hint">Auto-guessed from chip; you can change it.</div>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button id="grade">Grade</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:16px">
+      <h3 style="margin:0 0 8px; color: var(--muted); font-size:16px">Result</h3>
+      <div style="display:flex; gap:24px; flex-wrap:wrap">
+        <div>Execution Code: <span id="exec" class="bad">—</span></div>
+        <div>Grade: <span id="gradeVal" class="bad">—</span></div>
+      </div>
+      <div style="margin-top:12px">
+        <label>Logs</label>
+        <pre id="logs" style="max-height:220px"></pre>
+      </div>
+      <div style="margin-top:12px">
+        <label>Out Table</label>
+        <div style="overflow:auto; max-height:260px">
+          <table id="outTable"></table>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const API_BASE = (window.API_CONFIG?.API_BASE)
+      ?? (location.hostname.endsWith('github.io') ? 'https://nand2tetris-latest.onrender.com/'
+          : (location.origin.startsWith('http') ? location.origin : 'http://localhost:3000'));
+
+    // Known chip → project mapping (focus on CHIPS projects)
+    const ChipToProject = {
+      // project_01
+      Nand: 'project_01', Not: 'project_01', And: 'project_01', Or: 'project_01', Xor: 'project_01',
+      Mux: 'project_01', DMux: 'project_01', Not16: 'project_01', And16: 'project_01', Or16: 'project_01',
+      Mux16: 'project_01', Mux4Way16: 'project_01', Mux8Way16: 'project_01', DMux4Way: 'project_01', DMux8Way: 'project_01', Or8Way: 'project_01',
+      // project_02
+      HalfAdder: 'project_02', FullAdder: 'project_02', Add16: 'project_02', Inc16: 'project_02', ALU: 'project_02',
+      // project_03
+      DFF: 'project_03', Bit: 'project_03', Register: 'project_03', PC: 'project_03',
+      RAM8: 'project_03', RAM64: 'project_03', RAM512: 'project_03', RAM4K: 'project_03', RAM16K: 'project_03',
+    };
+
+    const ProjectOptions = [
+      { id: 'project_01', label: 'project_01 (Basic Gates)' },
+      { id: 'project_02', label: 'project_02 (ALU)' },
+      { id: 'project_03', label: 'project_03 (Memory)' },
+      { id: 'project_04', label: 'project_04 (Mult/Fill)' },
+      { id: 'project_05', label: 'project_05 (Computer)' },
+    ];
+
+    function populateProjects() {
+      const sel = $('#project'); sel.innerHTML = '';
+      ProjectOptions.forEach(p => { const opt = document.createElement('option'); opt.value = p.id; opt.textContent = p.label; sel.appendChild(opt); });
+    }
+
+    function guessProject(chip) {
+      return ChipToProject[chip] || 'project_01';
+    }
+
+    function renderTable(headers, rows) {
+      const tbl = $('#outTable'); tbl.innerHTML = '';
+      if (!headers || headers.length === 0) return;
+      const thead = document.createElement('thead');
+      const trh = document.createElement('tr');
+      headers.forEach(h => { const th = document.createElement('th'); th.textContent = h; trh.appendChild(th); });
+      thead.appendChild(trh);
+      const tbody = document.createElement('tbody');
+      (rows || []).forEach(r => { const tr = document.createElement('tr'); r.forEach(c => { const td = document.createElement('td'); td.textContent = String(c); tr.appendChild(td); }); tbody.appendChild(tr); });
+      tbl.appendChild(thead); tbl.appendChild(tbody);
+    }
+
+    function setHealth(status, version) {
+      const dot = $('#healthDot');
+      const text = $('#healthText');
+      const ver = $('#healthVer');
+      dot.classList.remove('s-green','s-yellow','s-red');
+      if (status === 'ok') { dot.classList.add('s-green'); text.textContent = 'Healthy'; }
+      else if (status === 'checking') { dot.classList.add('s-yellow'); text.textContent = 'Checking…'; }
+      else { dot.classList.add('s-red'); text.textContent = 'Unreachable'; }
+      ver.textContent = version ? `• v${version}` : '';
+    }
+
+    async function healthCheck() {
+      setHealth('checking');
+      try {
+        const ac = new AbortController();
+        const t = setTimeout(() => ac.abort(), 5000);
+        const res = await fetch(`${API_BASE}/health`, { signal: ac.signal });
+        clearTimeout(t);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setHealth(data?.ok ? 'ok' : 'red', data?.version);
+      } catch {
+        setHealth('red');
+      }
+    }
+    healthCheck();
+    setInterval(healthCheck, 15000);
+
+    $('#file').addEventListener('change', async (e) => {
+      const file = e.target.files?.[0]; if (!file) return;
+      const name = file.name || '';
+      const chip = name.replace(/\.[^.]+$/, '');
+      $('#chip').value = chip;
+      $('#project').value = guessProject(chip);
+      // keep the file object for submit
+      $('#file')._selectedFile = file;
+    });
+
+    async function grade() {
+      const file = $('#file')._selectedFile;
+      const chip = $('#chip').value.trim();
+      const projectID = $('#project').value.trim();
+      if (!file || !chip || !projectID) { alert('Select a file and ensure chip & project are set.'); return; }
+      const text = await file.text();
+      $('#grade').disabled = true; $('#grade').textContent = 'Grading...';
+      try {
+        const res = await fetch(`${API_BASE}/gradeChip`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: { projectID, chip }, files: { [`${chip}.hdl`]: text } })
+        });
+  const data = await res.json();
+  $('#exec').textContent = data.executionCode ?? 0;
+  $('#exec').className = (data.executionCode === 1) ? 'ok' : 'bad';
+        $('#gradeVal').textContent = data.grade ?? 0;
+        $('#gradeVal').className = (data.grade === 100) ? 'ok' : 'bad';
+        $('#logs').textContent = data.log || '';
+        renderTable(data?.outExecution?.headers, data?.outExecution?.rows);
+      } catch (e) {
+        $('#exec').textContent = '0';
+        $('#exec').className = 'bad';
+        $('#gradeVal').textContent = '0';
+        $('#gradeVal').className = 'bad';
+        $('#logs').textContent = String(e);
+        renderTable([], []);
+      } finally {
+        $('#grade').disabled = false; $('#grade').textContent = 'Grade';
+      }
+    }
+
+    $('#grade').addEventListener('click', grade);
+
+    populateProjects();
+  </script>
+</body>
+</html>
