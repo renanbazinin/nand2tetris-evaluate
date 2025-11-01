@@ -1,0 +1,3 @@
+export declare const cmp = "|in |out|\n| 0 | 1 |\n| 1 | 0 |";
+export declare const hdl = "// This file is part of www.nand2tetris.org\n// and the book \"The Elements of Computing Systems\"\n// by Nisan and Schocken, MIT Press.\n// File name: projects/1/Not.hdl\n/**\n * Not gate:\n * if (in) out = 0, else out = 1\n */\nCHIP Not {\n    IN in;\n    OUT out;\n\n    PARTS:\n    //// Replace this comment with your code.\n}";
+export declare const tst = "// This file is part of www.nand2tetris.org\n// and the book \"The Elements of Computing Systems\"\n// by Nisan and Schocken, MIT Press.\n// File name: projects/1/Not.tst\n\nload Not.hdl,\ncompare-to Not.cmp,\noutput-list in out;\n\nset in 0,\neval,\noutput;\n\nset in 1,\neval,\noutput;";

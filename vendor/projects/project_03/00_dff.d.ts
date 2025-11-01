@@ -1,0 +1,1 @@
+export declare const hdl = "// This file is part of www.nand2tetris.org\n// and the book \"The Elements of Computing Systems\"\n// by Nisan and Schocken, MIT Press.\n// File name: projects/03/DFF.hdl\n/**\n * Data Flip-flop:\n * maintains its current value:\n * out(t+1) = in(t)\n */\nCHIP DFF {\n    IN  in;\n    OUT out;\n\n    PARTS:\n    BUILTIN DFF;\n    CLOCKED in;\n}";

@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nand2Tetris Grader • Raw</title>
+  <script src="config.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a; /* slate-900 */
+      --panel: #111827; /* gray-900 */
+      --muted: #94a3b8; /* slate-400 */
+      --fg: #e5e7eb; /* gray-200 */
+      --accent: #22d3ee; /* cyan-400 */
+      --accent-2: #34d399; /* emerald-400 */
+      --danger: #fb7185; /* rose-400 */
+      --border: #1f2937; /* gray-800 */
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0; background: radial-gradient(1200px 800px at 10% 10%, #0b1220, var(--bg));
+      color: var(--fg); font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
+      line-height: 1.4;
+    }
+    header { padding: 24px; text-align: center; }
+    header h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
+    header p { margin: 6px 0 0; color: var(--muted); }
+
+    .container { max-width: 1080px; margin: 0 auto; padding: 16px 24px 48px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    .card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px; backdrop-filter: blur(2px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+    .card h2 { margin: 0 0 10px; font-size: 16px; color: var(--muted); font-weight: 600; }
+
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    input[type="text"], textarea, select {
+      width: 100%; background: #0b1220; color: var(--fg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 12px; font-size: 14px; outline: none;
+    }
+    textarea { min-height: 260px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 12px; }
+    button {
+      background: linear-gradient(180deg, var(--accent), #0891b2);
+      border: none; color: #001016; font-weight: 700; letter-spacing: .2px;
+      padding: 10px 14px; border-radius: 10px; cursor: pointer; transition: transform .08s ease;
+    }
+    button.secondary { background: linear-gradient(180deg, #475569, #1f2937); color: #e5e7eb; }
+    button:active { transform: translateY(1px); }
+
+    pre, code { background: #0b1220; color: #93c5fd; }
+    pre { padding: 12px; border-radius: 10px; overflow: auto; border: 1px solid var(--border); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid var(--border); padding: 8px; text-align: left; }
+    th { color: var(--muted); font-weight: 600; }
+    .ok { color: var(--accent-2); }
+    .bad { color: var(--danger); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Nand2Tetris HDL Grader – Raw</h1>
+    <p>Paste your HDL, select a project and chip, then grade it.</p>
+  </header>
+  <div class="container">
+    <div class="grid">
+      <section class="card">
+        <h2>Input</h2>
+        <div class="row">
+          <div>
+            <label for="project">Project ID</label>
+            <select id="project">
+              <option value="project_01">project_01 (Basic Gates)</option>
+              <option value="project_02">project_02 (ALU)</option>
+              <option value="project_03">project_03 (Memory)</option>
+              <option value="project_04">project_04 (Mult/Fill)</option>
+              <option value="project_05">project_05 (Computer)</option>
+            </select>
+          </div>
+          <div>
+            <label for="chip">Chip Name</label>
+            <input id="chip" type="text" placeholder="e.g. ALU" />
+          </div>
+        </div>
+        <div style="margin-top:10px">
+          <label for="hdl">HDL</label>
+          <textarea id="hdl" placeholder="Paste your .hdl contents here..."></textarea>
+        </div>
+        <div class="actions">
+          <button id="fillSample" class="secondary">Fill ALU sample</button>
+          <button id="grade">Grade</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Result</h2>
+        <div id="status">
+          <div>Execution Code: <span id="exec" class="bad">—</span></div>
+          <div>Grade: <span id="gradeVal" class="bad">—</span></div>
+        </div>
+        <div style="margin-top:12px">
+          <label>Logs</label>
+          <pre id="logs" style="max-height:220px"></pre>
+        </div>
+        <div style="margin-top:12px">
+          <label>Out Table</label>
+          <div style="overflow:auto; max-height:260px">
+            <table id="outTable"></table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const $ = (sel) => document.querySelector(sel);
+    const API_BASE = (window.API_CONFIG?.API_BASE)
+      ?? (location.origin.startsWith('http') ? location.origin : 'http://localhost:3000');
+
+    function renderTable(headers, rows) {
+      const tbl = $('#outTable');
+      tbl.innerHTML = '';
+      if (!headers || headers.length === 0) return;
+      const thead = document.createElement('thead');
+      const trh = document.createElement('tr');
+      headers.forEach(h => { const th = document.createElement('th'); th.textContent = h; trh.appendChild(th); });
+      thead.appendChild(trh);
+      const tbody = document.createElement('tbody');
+      (rows || []).forEach(r => { const tr = document.createElement('tr'); r.forEach(c => { const td = document.createElement('td'); td.textContent = String(c); tr.appendChild(td); }); tbody.appendChild(tr); });
+      tbl.appendChild(thead); tbl.appendChild(tbody);
+    }
+
+    async function grade() {
+      const projectID = $('#project').value.trim();
+      const chip = $('#chip').value.trim();
+      const hdl = $('#hdl').value;
+      if (!projectID || !chip || !hdl) { alert('Please fill project, chip and HDL.'); return; }
+      $('#grade').disabled = true;
+      $('#grade').textContent = 'Grading...';
+      try {
+        const res = await fetch(`${API_BASE}/gradeChip`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ config: { projectID, chip }, hdl })
+        });
+        const data = await res.json();
+        $('#exec').textContent = data.executionCode ?? data['execution code'] ?? 0;
+        $('#exec').className = (data.executionCode === 1 || data['execution code'] === 1) ? 'ok' : 'bad';
+        $('#gradeVal').textContent = data.grade ?? 0;
+        $('#gradeVal').className = (data.grade === 100) ? 'ok' : 'bad';
+        $('#logs').textContent = data.log || '';
+        renderTable(data?.outExecution?.headers, data?.outExecution?.rows);
+      } catch (e) {
+        $('#exec').textContent = '0';
+        $('#exec').className = 'bad';
+        $('#gradeVal').textContent = '0';
+        $('#gradeVal').className = 'bad';
+        $('#logs').textContent = String(e);
+        renderTable([], []);
+      } finally {
+        $('#grade').disabled = false;
+        $('#grade').textContent = 'Grade';
+      }
+    }
+
+    $('#grade').addEventListener('click', grade);
+
+    // Quick sample to help test wiring
+    $('#fillSample').addEventListener('click', () => {
+      $('#project').value = 'project_02';
+      $('#chip').value = 'ALU';
+      $('#hdl').value = `/** A deliberately minimal ALU stub to demonstrate requests. Replace with your own. */
+CHIP ALU {
+  IN x[16], y[16], zx, nx, zy, ny, f, no;
+  OUT out[16], zr, ng;
+  PARTS:
+  // TODO: Implement ALU
+}
+`;
+    });
+  </script>
+</body>
+</html>

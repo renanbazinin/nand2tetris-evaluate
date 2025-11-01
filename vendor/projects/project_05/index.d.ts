@@ -1,0 +1,31 @@
+import { FileSystem } from "@davidsouther/jiffies/lib/esm/fs.js";
+export declare const CHIPS: {
+    "Memory.hdl": string;
+    "Memory.tst": string;
+    "Memory.cmp": string;
+    "CPU.hdl": string;
+    "CPU.tst": string;
+    "CPU.cmp": string;
+    "CPU-external.tst": string;
+    "CPU-external.cmp": string;
+    "Computer.hdl": string;
+    "ComputerAdd.tst": string;
+    "ComputerAdd.cmp": string;
+    "ComputerMax.tst": string;
+    "ComputerMax.cmp": string;
+    "ComputerRect.tst": string;
+    "ComputerRect.cmp": string;
+    "Add.hack": string;
+    "Max.hack": string;
+    "Rect.hack": string;
+};
+export declare const BUILTIN_CHIPS: {
+    Screen: string;
+    Keyboard: string;
+    DRegister: string;
+    ARegister: string;
+    ROM32K: string;
+    RAM16K: string;
+};
+export declare function resetFiles(fs: FileSystem): Promise<void>;
+export declare function resetTests(fs: FileSystem): Promise<void>;

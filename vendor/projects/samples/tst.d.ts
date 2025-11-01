@@ -1,0 +1,1 @@
+export declare const TickTock = "// TickTock forever\n\n// Uncomment for a sample progam. Can use any program name in /samples\n// ROM32K load Max.hack;\n\n// Uncomment to manually write a program.\n// set ROM32K[0] %X4000;\n// set ROM32K[1] %XF3C8; // M=-1\n\nrepeat {\n  tick, tock;\n}";

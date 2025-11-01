@@ -1,0 +1,37 @@
+{
+  "name": "api-lite",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lightweight API to compile and grade HDL chips against builtin tests.",
+  "type": "module",
+  "main": "dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build:bundle": "esbuild src/index.ts --bundle --platform=node --format=esm --sourcemap --alias:@nand2tetris/projects=./vendor/projects --alias:@nand2tetris/simulator=./vendor/simulator --outfile=dist/index.js && esbuild src/test/index.ts --bundle --platform=node --format=esm --sourcemap --alias:@nand2tetris/projects=./vendor/projects --alias:@nand2tetris/simulator=./vendor/simulator --outfile=dist/test/index.js",
+    "demo": "npm run build:bundle && node dist/test/index.js",
+    "start": "node dist/server.js",
+    "serve": "npm run build && node dist/server.js",
+    "docker:build": "docker build -t api-lite:latest .",
+    "docker:run": "docker run --rm -p 3000:3000 api-lite:latest",
+    "docker:tag": "docker tag api-lite:latest renanbazinin/nand2tetris:0.1 && docker tag api-lite:latest renanbazinin/nand2tetris:latest",
+    "docker:push": "npm run docker:tag && docker push renanbazinin/nand2tetris:0.1 && docker push renanbazinin/nand2tetris:latest",
+    "clean": "shx rm -rf node_modules dist tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@davidsouther/jiffies": "^2.2.5",
+    "@types/express": "^5.0.5",
+    "@types/node": "^20.14.2",
+    "express": "^5.1.0",
+    "ohm-js": "^17.1.0",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0",
+    "shx": "^0.3.4",
+    "typescript": "^5.9.2"
+  }
+}

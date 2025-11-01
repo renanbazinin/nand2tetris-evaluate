@@ -1,0 +1,23 @@
+import { FileSystem } from "@davidsouther/jiffies/lib/esm/fs.js";
+export declare const CHIPS: {
+    "HalfAdder.hdl": string;
+    "HalfAdder.tst": string;
+    "HalfAdder.cmp": string;
+    "FullAdder.hdl": string;
+    "FullAdder.tst": string;
+    "FullAdder.cmp": string;
+    "Add16.hdl": string;
+    "Add16.tst": string;
+    "Add16.cmp": string;
+    "Inc16.hdl": string;
+    "Inc16.tst": string;
+    "Inc16.cmp": string;
+    "ALU.hdl": string;
+    "ALU.tst": string;
+    "ALU.cmp": string;
+    "ALU-basic.tst": string;
+    "ALU-basic.cmp": string;
+};
+export declare const BUILTIN_CHIPS: {};
+export declare function resetFiles(fs: FileSystem): Promise<void>;
+export declare function resetTests(fs: FileSystem): Promise<void>;

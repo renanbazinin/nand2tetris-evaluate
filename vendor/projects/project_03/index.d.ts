@@ -1,0 +1,32 @@
+import { FileSystem } from "@davidsouther/jiffies/lib/esm/fs.js";
+export declare const CHIPS: {
+    "Bit.hdl": string;
+    "Bit.tst": string;
+    "Bit.cmp": string;
+    "Register.hdl": string;
+    "Register.tst": string;
+    "Register.cmp": string;
+    "PC.hdl": string;
+    "PC.tst": string;
+    "PC.cmp": string;
+    "RAM8.hdl": string;
+    "RAM8.tst": string;
+    "RAM8.cmp": string;
+    "RAM64.hdl": string;
+    "RAM64.tst": string;
+    "RAM64.cmp": string;
+    "RAM512.hdl": string;
+    "RAM512.tst": string;
+    "RAM512.cmp": string;
+    "RAM4K.hdl": string;
+    "RAM4K.tst": string;
+    "RAM4K.cmp": string;
+    "RAM16K.hdl": string;
+    "RAM16K.tst": string;
+    "RAM16K.cmp": string;
+};
+export declare const BUILTIN_CHIPS: {
+    DFF: string;
+};
+export declare function resetFiles(fs: FileSystem): Promise<void>;
+export declare function resetTests(fs: FileSystem): Promise<void>;

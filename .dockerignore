@@ -1,0 +1,26 @@
+# Dependencies & builds
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-store
+
+# Build outputs
+/dist
+/coverage
+
+# Local env/config
+.env
+.env.*
+
+# VCS/editor
+.git
+.gitignore
+.vscode
+
+# Ignore client UI in image (served separately)
+client/
+
+# OS
+.DS_Store
+Thumbs.db
