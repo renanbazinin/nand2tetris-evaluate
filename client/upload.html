@@ -12,9 +12,14 @@
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body { margin:0; background: radial-gradient(1200px 800px at 10% 10%, #0b1220, var(--bg)); color: var(--fg); font-family: ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial; }
-    header { padding: 24px; text-align:center; }
-    header h1 { margin:0; font-size: 28px; }
-    header p { margin:6px 0 0; color: var(--muted); }
+  header { padding: 24px; text-align:center; }
+  header h1 { margin:0; font-size: 28px; }
+  header p { margin:6px 0 8px; color: var(--muted); }
+  .health { display:flex; align-items:center; gap:8px; justify-content:center; font-size:13px; color: var(--muted); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #475569; box-shadow: 0 0 8px rgba(0,0,0,0.3); display:inline-block; }
+  .s-green { background: #22c55e; }
+  .s-yellow { background: #f59e0b; }
+  .s-red { background: #ef4444; }
     .container { max-width: 880px; margin: 0 auto; padding: 16px 24px 48px; }
     .card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid var(--border); border-radius: 12px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
     label { display:block; font-size:12px; color: var(--muted); margin-bottom:6px; }
@@ -35,6 +40,11 @@
   <header>
     <h1>Nand2Tetris HDL Grader – Upload</h1>
     <p>Select an .hdl file, we'll derive the chip name from the filename and guess the project.</p>
+    <div class="health">
+      <span class="dot s-yellow" id="healthDot"></span>
+      <span id="healthText">Checking health…</span>
+      <span id="healthVer"></span>
+    </div>
   </header>
 
   <div class="container">
@@ -85,7 +95,8 @@
   <script>
     const $ = (sel) => document.querySelector(sel);
     const API_BASE = (window.API_CONFIG?.API_BASE)
-      ?? (location.origin.startsWith('http') ? location.origin : 'http://localhost:3000');
+      ?? (location.hostname.endsWith('github.io') ? 'https://nand2tetris-latest.onrender.com/'
+          : (location.origin.startsWith('http') ? location.origin : 'http://localhost:3000'));
 
     // Known chip → project mapping (focus on CHIPS projects)
     const ChipToProject = {
@@ -128,6 +139,34 @@
       (rows || []).forEach(r => { const tr = document.createElement('tr'); r.forEach(c => { const td = document.createElement('td'); td.textContent = String(c); tr.appendChild(td); }); tbody.appendChild(tr); });
       tbl.appendChild(thead); tbl.appendChild(tbody);
     }
+
+    function setHealth(status, version) {
+      const dot = $('#healthDot');
+      const text = $('#healthText');
+      const ver = $('#healthVer');
+      dot.classList.remove('s-green','s-yellow','s-red');
+      if (status === 'ok') { dot.classList.add('s-green'); text.textContent = 'Healthy'; }
+      else if (status === 'checking') { dot.classList.add('s-yellow'); text.textContent = 'Checking…'; }
+      else { dot.classList.add('s-red'); text.textContent = 'Unreachable'; }
+      ver.textContent = version ? `• v${version}` : '';
+    }
+
+    async function healthCheck() {
+      setHealth('checking');
+      try {
+        const ac = new AbortController();
+        const t = setTimeout(() => ac.abort(), 5000);
+        const res = await fetch(`${API_BASE}/health`, { signal: ac.signal });
+        clearTimeout(t);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setHealth(data?.ok ? 'ok' : 'red', data?.version);
+      } catch {
+        setHealth('red');
+      }
+    }
+    healthCheck();
+    setInterval(healthCheck, 15000);
 
     $('#file').addEventListener('change', async (e) => {
       const file = e.target.files?.[0]; if (!file) return;

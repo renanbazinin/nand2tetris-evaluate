@@ -23,9 +23,14 @@
       color: var(--fg); font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
       line-height: 1.4;
     }
-    header { padding: 24px; text-align: center; }
-    header h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
-    header p { margin: 6px 0 0; color: var(--muted); }
+  header { padding: 24px; text-align: center; }
+  header h1 { margin: 0; font-size: 28px; letter-spacing: 0.5px; }
+  header p { margin: 6px 0 8px; color: var(--muted); }
+  .health { display:flex; align-items:center; gap:8px; justify-content:center; font-size:13px; color: var(--muted); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #475569; box-shadow: 0 0 8px rgba(0,0,0,0.3); display:inline-block; }
+  .s-green { background: #22c55e; }
+  .s-yellow { background: #f59e0b; }
+  .s-red { background: #ef4444; }
 
     .container { max-width: 1080px; margin: 0 auto; padding: 16px 24px 48px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -68,6 +73,11 @@
   <header>
     <h1>Nand2Tetris HDL Grader – Raw</h1>
     <p>Paste your HDL, select a project and chip, then grade it.</p>
+    <div class="health">
+      <span class="dot s-yellow" id="healthDot"></span>
+      <span id="healthText">Checking health…</span>
+      <span id="healthVer"></span>
+    </div>
   </header>
   <div class="container">
     <div class="grid">
@@ -122,7 +132,36 @@
   <script>
     const $ = (sel) => document.querySelector(sel);
     const API_BASE = (window.API_CONFIG?.API_BASE)
-      ?? (location.origin.startsWith('http') ? location.origin : 'http://localhost:3000');
+      ?? (location.hostname.endsWith('github.io') ? 'https://nand2tetris-latest.onrender.com/'
+          : (location.origin.startsWith('http') ? location.origin : 'http://localhost:3000'));
+
+    function setHealth(status, version) {
+      const dot = $('#healthDot');
+      const text = $('#healthText');
+      const ver = $('#healthVer');
+      dot.classList.remove('s-green','s-yellow','s-red');
+      if (status === 'ok') { dot.classList.add('s-green'); text.textContent = 'Healthy'; }
+      else if (status === 'checking') { dot.classList.add('s-yellow'); text.textContent = 'Checking…'; }
+      else { dot.classList.add('s-red'); text.textContent = 'Unreachable'; }
+      ver.textContent = version ? `• v${version}` : '';
+    }
+
+    async function healthCheck() {
+      setHealth('checking');
+      try {
+        const ac = new AbortController();
+        const t = setTimeout(() => ac.abort(), 5000);
+        const res = await fetch(`${API_BASE}/health`, { signal: ac.signal });
+        clearTimeout(t);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setHealth(data?.ok ? 'ok' : 'red', data?.version);
+      } catch {
+        setHealth('red');
+      }
+    }
+    healthCheck();
+    setInterval(healthCheck, 15000);
 
     function renderTable(headers, rows) {
       const tbl = $('#outTable');
