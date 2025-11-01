@@ -1,11 +1,13 @@
-name: Deploy client to GitHub Pages
+name: (disabled) Deploy client via GitHub Pages Actions
+
+# NOTE:
+# This workflow previously attempted to deploy using actions/deploy-pages, but
+# the repository has been updated to deploy "client/" to the gh-pages branch via
+# .github/workflows/deploy-client-ghpages.yml.
+# To avoid conflicting deployments and 404s when Pages isn't enabled for Actions,
+# this workflow is now manual-only. Use the ghpages workflow for automatic deploys.
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'client/**'
-      - '.github/workflows/deploy-client.yml'
   workflow_dispatch:
 
 permissions:
@@ -13,27 +15,8 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: 'pages'
-  cancel-in-progress: true
-
 jobs:
-  build:
+  noop:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Upload client artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: './client'
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - run: echo "This workflow is disabled. Use deploy-client-ghpages.yml instead."
